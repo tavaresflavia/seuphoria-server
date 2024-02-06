@@ -19,12 +19,12 @@ mongoose.connect(DATABASE_URI, {retryWrites: true, w:'majority'})
 
 app.use(cors());
 
-app.use("/", (req,res)=>{
-
-    res.status(200).json({message:"Hello"})
-})
 
 app.use('/products',productRoutes);
+// app.use('/', (req,res)=>{
+
+//     res.status(200).json({message:"Hello"})
+// })
 
 app.listen(PORT, ()=> {console.log(`...Listening to ${PORT}...`)})
 
