@@ -3,9 +3,9 @@ import mongoose from "mongoose";
 import Product from "../models/Product";
 import { IProduct } from "../models/Product";
 
-const findOne = (req: Request, res: Response) => {
+const findOne =  async(req: Request, res: Response) => {
   const { productId } = req.params;
-  return Product.findById(productId)
+  return await Product.findById(productId)
     .then((product) =>
       product
         ? res.status(200).json(product)
@@ -15,16 +15,20 @@ const findOne = (req: Request, res: Response) => {
 };
 
 const findAll = async (req: Request, res: Response) => {
-  let { tags, ...queryParams } = req.query;
+  let { tags, rating, ...queryParams } = req.query;
 
   try {
-    if (Object.values(queryParams).length || tags?.length) {
-      if(tags){
-      return res.status(200).json(await Product.find({ ...queryParams, tags:{ $in: tags }}));
+    if (Object.values(queryParams).length || tags?.length || rating) {
+      const filters = { ...queryParams };
+      if (tags) {
+        filters.tags = { $in: tags };
       }
-      return res.status(200).json(await Product.find({ ...queryParams}));
+      if (rating) {
+        filters.rating = { $gt: rating };
+      }
+      return res.status(200).json(await Product.find(filters));
     } else {
-        return res.status(200).json(await Product.find().limit(200));
+      return res.status(200).json(await Product.find().limit(200));
     }
   } catch {
     (error: string) => res.status(500).json({ error });
@@ -32,29 +36,24 @@ const findAll = async (req: Request, res: Response) => {
 };
 
 const findFilters = async (req: Request, res: Response) => {
- try{
-  const brands = await Product.distinct("brand");
-  const  categories = await Product.distinct("category");
-  const  tags = await Product.distinct("tags");
+  try {
+    const brands = await Product.distinct("brand");
+    const categories = await Product.distinct("category");
+    const tags = await Product.distinct("tags");
 
-  brands.indexOf("") && brands.splice(brands.indexOf(""),1) 
-  brands.indexOf("null") && brands.splice(brands.indexOf(""),1) 
+    brands.indexOf("") && brands.splice(brands.indexOf(""), 1);
+    brands.indexOf("null") && brands.splice(brands.indexOf(""), 1);
 
-  categories.indexOf("") && categories.splice(categories.indexOf(""),1) 
+    categories.indexOf("") && categories.splice(categories.indexOf(""), 1);
 
-
-  return res.status(200).json({brands,categories, tags})
-
-
- } catch {
-  (error: string) => res.status(500).json({ error });
-}
-  
-
-} 
+    return res.status(200).json({ brands, categories, tags });
+  } catch {
+    (error: string) => res.status(500).json({ error });
+  }
+};
 
 export default {
   findAll,
   findOne,
-  findFilters
+  findFilters,
 };
