@@ -21,10 +21,10 @@ const findAll = async (req: Request, res: Response) => {
     if (Object.values(queryParams).length || tags?.length || rating) {
       const filters = { ...queryParams };
       if (tags) {
-        filters.tags = { $in: tags };
+        filters.tags = { $all: tags };
       }
       if (rating) {
-        filters.rating = { $gt: rating };
+        filters.rating = { $gte: rating };
       }
       return res.status(200).json(await Product.find(filters));
     } else {
